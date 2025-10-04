@@ -33,13 +33,21 @@ class AuthController(
     }
 
     @PostMapping("/login")
-    fun login(@RequestBody authRequest: AuthRequest): ResponseEntity<Map<String, String>> {
-        authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(authRequest.username, authRequest.password)
-        )
-        val userDetails = userDetailsServiceImpl.loadUserByUsername(authRequest.username)
-        val jwt = jwtUtil.generateToken(userDetails)
-        return ResponseEntity.ok(mapOf("token" to jwt))
+    fun login(@RequestBody authRequest: AuthRequest): ResponseEntity<*> {
+        return try {
+            println("Login endpoint reached for user: ${authRequest.username}")
+            val authentication = authenticationManager.authenticate(
+                UsernamePasswordAuthenticationToken(authRequest.username, authRequest.password)
+            )
+            println("Authentication successful: $authentication")
+            val userDetails = userDetailsServiceImpl.loadUserByUsername(authRequest.username)
+            val jwt = jwtUtil.generateToken(userDetails)
+            ResponseEntity.ok(mapOf("token" to jwt))
+        } catch (e: Exception) {
+            println("Login error: ${e.javaClass.simpleName} - ${e.message}")
+            e.printStackTrace()
+            ResponseEntity.badRequest().body(mapOf("error" to "${e.javaClass.simpleName}: ${e.message}"))
+        }
     }
 }
 

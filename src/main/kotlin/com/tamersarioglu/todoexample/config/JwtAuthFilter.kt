@@ -20,6 +20,12 @@ class JwtAuthFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+        // Skip filter for auth endpoints
+        if (request.servletPath.startsWith("/api/auth")) {
+            filterChain.doFilter(request, response)
+            return
+        }
+
         val authHeader = request.getHeader("Authorization")
         var token: String? = null
         var username: String? = null

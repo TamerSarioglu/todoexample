@@ -4,6 +4,8 @@ import com.tamersarioglu.todoexample.service.UserDetailsServiceImpl
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -21,14 +23,17 @@ class SecurityConfig(
 ) {
 
     @Bean
-    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun securityFilterChain(http: HttpSecurity, authProvider: AuthenticationProvider): SecurityFilterChain {
         http
             .csrf { it.disable() }
+            .formLogin { it.disable() }
+            .httpBasic { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers("/api/auth/**").permitAll()
                     .anyRequest().authenticated()
             }
+            .authenticationProvider(authProvider)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
@@ -37,6 +42,14 @@ class SecurityConfig(
     @Bean
     fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
+    }
+
+    @Bean
+    fun authenticationProvider(passwordEncoder: PasswordEncoder): AuthenticationProvider {
+        return DaoAuthenticationProvider().apply {
+            setUserDetailsService(userDetailsServiceImpl)
+            setPasswordEncoder(passwordEncoder)
+        }
     }
 
     @Bean
