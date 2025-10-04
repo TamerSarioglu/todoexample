@@ -17,5 +17,7 @@ data class Todo(
     @Column(nullable = false)
     val description: String,
     @Column(nullable = false)
+    val userName: String,
+    @Column(nullable = false)
     val completed: Boolean = false,
 )
