@@ -20,7 +20,6 @@ class JwtAuthFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        // Skip filter for auth endpoints
         if (request.servletPath.startsWith("/api/auth")) {
             filterChain.doFilter(request, response)
             return
